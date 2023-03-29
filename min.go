@@ -5,28 +5,30 @@ import (
 	"net/http"
 )
 
+type HandlerFunc func(res http.ResponseWriter, req *http.Request)
+
 type Engine struct {
 	//由 map 实现的路由器
-	router map[string]func(res http.ResponseWriter, req *http.Request)
+	router map[string]HandlerFunc
 }
 
 func New() *Engine {
-	return &Engine{router: make(map[string]func(res http.ResponseWriter, req *http.Request))}
+	return &Engine{router: make(map[string]HandlerFunc)}
 }
-func (e *Engine) addroute(method, pattern string, handler func(res http.ResponseWriter, req *http.Request)) {
+func (e *Engine) addroute(method, pattern string, handler HandlerFunc) {
 	key := method + ":" + pattern
 	e.router[key] = handler
 }
-func (e *Engine) GET(pattern string, handler func(res http.ResponseWriter, req *http.Request)) {
+func (e *Engine) GET(pattern string, handler HandlerFunc) {
 	e.addroute("GET", pattern, handler)
 }
-func (e *Engine) POST(pattern string, handler func(res http.ResponseWriter, req *http.Request)) {
+func (e *Engine) POST(pattern string, handler HandlerFunc) {
 	e.addroute("POST", pattern, handler)
 }
-func (e *Engine) PUT(pattern string, handler func(res http.ResponseWriter, req *http.Request)) {
+func (e *Engine) PUT(pattern string, handler HandlerFunc) {
 	e.addroute("PUT", pattern, handler)
 }
-func (e *Engine) DELETE(pattern string, handler func(res http.ResponseWriter, req *http.Request)) {
+func (e *Engine) DELETE(pattern string, handler HandlerFunc) {
 	e.addroute("DELETE", pattern, handler)
 }
 func (e *Engine) Run(addr string) error {
