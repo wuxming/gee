@@ -7,12 +7,12 @@ import (
 
 func main() {
 	m := New()
-	m.GET("/testGET", func(res http.ResponseWriter, req *http.Request) {
-		res.WriteHeader(http.StatusOK)
-		_, err := res.Write([]byte("GET 请求测试成功"))
-		if err != nil {
-			fmt.Println(err)
-		}
+	m.GET("/testGET", func(c *Context) {
+		name := c.Query("name")
+		c.JSON(http.StatusOK, H{
+			"name": name,
+			"msg":  "GET 请求测试成功",
+		})
 	})
 	err := m.Run(":8080")
 	if err != nil {

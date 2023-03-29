@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-type HandlerFunc func(res http.ResponseWriter, req *http.Request)
+type HandlerFunc func(ctx *Context)
 
 type Engine struct {
 	//由 map 实现的路由器
@@ -39,7 +39,8 @@ func (e *Engine) Run(addr string) error {
 func (e *Engine) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	key := req.Method + ":" + req.URL.Path
 	if handler, ok := e.router[key]; ok {
-		handler(res, req)
+		c := NewContext(res, req)
+		handler(c)
 	} else {
 		res.WriteHeader(http.StatusNotFound)
 		_, err := res.Write([]byte("404 not found"))
