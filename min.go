@@ -7,25 +7,22 @@ import (
 type HandlerFunc func(ctx *Context)
 type HandlersChain []HandlerFunc
 type Engine struct {
-	router *Router
+	*RouterGroup //继承后，可以调用RouterGroup的全部方法
+	router       *Router
+	groups       []*RouterGroup //存储所有的分组
 }
 
 func New() *Engine {
-	return &Engine{router: NewRouter()}
+	engine := &Engine{router: NewRouter()}
+	//作为根节点的 group,可以认为是最大的根分组
+	rootGroup := &RouterGroup{engine: engine}
+	engine.RouterGroup = rootGroup
+
+	engine.groups = []*RouterGroup{rootGroup}
+
+	return engine
 }
 
-func (e *Engine) GET(pattern string, handlers ...HandlerFunc) {
-	e.router.addRoute("GET", pattern, handlers)
-}
-func (e *Engine) POST(pattern string, handlers ...HandlerFunc) {
-	e.router.addRoute("POST", pattern, handlers)
-}
-func (e *Engine) PUT(pattern string, handlers ...HandlerFunc) {
-	e.router.addRoute("PUT", pattern, handlers)
-}
-func (e *Engine) DELETE(pattern string, handlers ...HandlerFunc) {
-	e.router.addRoute("DELETE", pattern, handlers)
-}
 func (e *Engine) Run(addr string) error {
 	return http.ListenAndServe(addr, e)
 }

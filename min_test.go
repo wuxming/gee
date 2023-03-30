@@ -11,7 +11,8 @@ import (
 
 func TestMinGet(t *testing.T) {
 	m := New()
-	m.GET("/testGET/:var1", func(c *Context) {
+	g := m.Group("v1")
+	g.GET("/testGET/:var1", func(c *Context) {
 		name := c.Query("name")
 		var1 := c.Params("var1")
 		c.JSON(http.StatusOK, H{
@@ -24,7 +25,7 @@ func TestMinGet(t *testing.T) {
 	ts := httptest.NewServer(m)
 	defer ts.Close()
 	//发送 Get 请求
-	res, err := http.Get(ts.URL + "/testGET/123?name=张三")
+	res, err := http.Get(ts.URL + "/v1/testGET/123?name=张三")
 	if err != nil {
 		t.Error(err)
 	}
@@ -38,13 +39,14 @@ func TestMinGet(t *testing.T) {
 	}
 	resbody := make(map[string]interface{})
 	_ = json.Unmarshal(body, &resbody)
+	//比较
 	if reflect.DeepEqual(resbody, map[string]interface{}{
 		"name": "张三",
 		"var1": "123",
 		"msg":  "GET 请求测试成功",
 	}) {
-		t.Error("结果不符合")
-	} else {
 		t.Log(resbody)
+	} else {
+		t.Error("结果不符合")
 	}
 }
