@@ -23,6 +23,18 @@ type Context struct {
 
 	Method string
 	Path   string
+
+	params map[string]string
+}
+
+func NewContext(ResponseWriter http.ResponseWriter, Request *http.Request) *Context {
+	return &Context{
+		Request:        Request,
+		ResponseWriter: ResponseWriter,
+		Method:         Request.Method,
+		Path:           Request.URL.Path,
+		params:         make(map[string]string),
+	}
 }
 
 //------------------------input-------------------------------------
@@ -34,13 +46,9 @@ func (c *Context) Postform(key string) string {
 func (c *Context) Query(key string) string {
 	return c.Request.URL.Query().Get(key)
 }
-func NewContext(ResponseWriter http.ResponseWriter, Request *http.Request) *Context {
-	return &Context{
-		Request:        Request,
-		ResponseWriter: ResponseWriter,
-		Method:         Request.Method,
-		Path:           Request.URL.Path,
-	}
+
+func (c *Context) Params(key string) string {
+	return c.params[key]
 }
 
 //------------------------output-------------------------------------

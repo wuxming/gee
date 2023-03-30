@@ -15,16 +15,16 @@ func New() *Engine {
 }
 
 func (e *Engine) GET(pattern string, handlers ...HandlerFunc) {
-	e.router.addroute("GET", pattern, handlers)
+	e.router.addRoute("GET", pattern, handlers)
 }
 func (e *Engine) POST(pattern string, handlers ...HandlerFunc) {
-	e.router.addroute("POST", pattern, handlers)
+	e.router.addRoute("POST", pattern, handlers)
 }
 func (e *Engine) PUT(pattern string, handlers ...HandlerFunc) {
-	e.router.addroute("PUT", pattern, handlers)
+	e.router.addRoute("PUT", pattern, handlers)
 }
 func (e *Engine) DELETE(pattern string, handlers ...HandlerFunc) {
-	e.router.addroute("DELETE", pattern, handlers)
+	e.router.addRoute("DELETE", pattern, handlers)
 }
 func (e *Engine) Run(addr string) error {
 	return http.ListenAndServe(addr, e)
