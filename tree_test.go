@@ -1,21 +1,38 @@
 package main
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestTree(t *testing.T) {
 	n := &node{}
-	pattern := "/test/tree"
-	//插入到前缀树
-	n.instert(pattern, []string{"test", "tree"}, 0)
-	//查询
-	resn := n.search([]string{"test", "tree"}, 0)
-	if resn.pattern != pattern {
-		t.Errorf("查询到的pattern应该是`%s`，而不是`%s`", pattern, resn.pattern)
+	pattern, path := "/test/tree", "/test/tree"
+	if !testTree(pattern, path, n) {
+		t.Errorf(`"%s"匹配"%s"失败，前缀树有错误`, path, pattern)
 	}
-	pattern = "/test/tree/v2"
-	n.instert(pattern, []string{"test", "tree", "v2"}, 0)
-	resn2 := n.search([]string{"test", "tree", "v2"}, 0)
-	if resn2.pattern != pattern {
-		t.Errorf("查询到的pattern应该是`%s`，而不是`%s`", pattern, resn2.pattern)
+
+	pattern, path = "/test/tree/:v2", "/test/tree/123"
+	if !testTree(pattern, path, n) {
+		t.Errorf(`"%s"匹配"%s"失败，前缀树有错误`, path, pattern)
+	}
+	//todo 前缀树有错误待处理
+	pattern, path = "/test/tree/*v3", "/test/tree/321/abc"
+	if !testTree(pattern, path, n) {
+		t.Errorf(`"%s"匹配"%s"失败，前缀树有错误`, path, pattern)
+	}
+	t.Log("测试完成")
+
+}
+func testTree(pattern, path string, n *node) bool {
+	//插入到前缀树
+	parts := parsePatternAndPath(pattern)
+	n.instert(pattern, parts, 0)
+	//查询
+	searchParts := parsePatternAndPath(path)
+	searchNode := n.search(searchParts, 0)
+	if searchNode != nil {
+		return searchNode.pattern == pattern
+	} else {
+		return false
 	}
 }
