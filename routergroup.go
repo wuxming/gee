@@ -1,9 +1,14 @@
 package main
 
 type RouterGroup struct {
-	prefix string       //该分组的前缀
-	parent *RouterGroup //父分组
-	engine *Engine      //可以通过 驱动器 engine 访问其他接口
+	prefix      string       //该分组的前缀
+	parent      *RouterGroup //父分组
+	engine      *Engine      //可以通过 驱动器 engine 访问其他接口
+	middlewares []HandlerFunc
+}
+
+func (g *RouterGroup) Use(middleware HandlerFunc) {
+	g.middlewares = append(g.middlewares, middleware)
 }
 
 func (g *RouterGroup) Group(prefix string) *RouterGroup {

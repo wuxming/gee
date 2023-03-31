@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -12,7 +13,13 @@ import (
 func TestMinGet(t *testing.T) {
 	m := New()
 	g := m.Group("v1")
+	g.Use(func(ctx *Context) {
+		fmt.Println("123")
+		ctx.Next()
+		fmt.Println("321")
+	})
 	g.GET("/testGET/:var1", func(c *Context) {
+		t.Log("/testGET/:var1")
 		name := c.Query("name")
 		var1 := c.Params("var1")
 		c.JSON(http.StatusOK, H{

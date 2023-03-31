@@ -64,17 +64,20 @@ func (r *Router) getRoute(method, path string) (*node, map[string]string) {
 
 //路由处理
 func (r *Router) handle(c *Context) {
+
 	n, params := r.getRoute(c.Method, c.Path)
 	if n != nil {
 		c.params = params
 		key := c.Method + ":" + n.pattern
-		//路由匹配成功，运行函数链
-		for _, handlerFunc := range r.handlers[key] {
-			handlerFunc(c)
-		}
+		//路由匹配成功，添加相应的函数链
+		c.handlers = append(c.handlers, r.handlers[key]...)
 	} else {
-		c.Data(http.StatusNotFound, []byte("404 not found"))
+		//未匹配路由，则添加 404 handler
+		c.handlers = append(c.handlers, func(ctx *Context) {
+			ctx.Data(http.StatusNotFound, []byte("404 not found"))
+		})
 	}
+	c.Next()
 }
 
 //pattern 和 path 以 / 分割成 parts 数组
