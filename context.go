@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"net/http"
 )
 
@@ -11,6 +12,7 @@ const (
 	plainContentTyp = "text/plain"
 	htmlContentType = "text/html"
 )
+const abortIndex int = math.MaxInt8 >> 1
 
 // H 使得数据构建更加简洁
 type H map[string]interface{}
@@ -24,7 +26,11 @@ type Context struct {
 	Method string
 	Path   string
 
-	params map[string]string
+	StatusCode int
+
+	params   map[string]string
+	index    int           //函数链的下标指针
+	handlers HandlersChain //请求访问的函数链
 }
 
 func NewContext(ResponseWriter http.ResponseWriter, Request *http.Request) *Context {
@@ -33,8 +39,24 @@ func NewContext(ResponseWriter http.ResponseWriter, Request *http.Request) *Cont
 		ResponseWriter: ResponseWriter,
 		Method:         Request.Method,
 		Path:           Request.URL.Path,
+		index:          -1, //下标从-1 开始
 		params:         make(map[string]string),
 	}
+}
+
+//------------------------flow control-------------------------------------
+
+// Next 开始运行函数链中当前下标后面的函数
+func (c *Context) Next() {
+	c.index++
+	for ; c.index < len(c.handlers); c.index++ {
+		c.handlers[c.index](c)
+	}
+}
+
+// Abort 中止函数链的运行
+func (c *Context) Abort() {
+	c.index = abortIndex
 }
 
 //------------------------input-------------------------------------
@@ -55,6 +77,7 @@ func (c *Context) Params(key string) string {
 
 // Status 写入请求头状态码
 func (c *Context) Status(code int) {
+	c.StatusCode = code
 	c.ResponseWriter.WriteHeader(code)
 }
 

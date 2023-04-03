@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"strings"
 )
 
 type HandlerFunc func(ctx *Context)
@@ -22,6 +23,11 @@ func New() *Engine {
 
 	return engine
 }
+func Default() *Engine {
+	engine := New()
+	engine.Use(Logger())
+	return engine
+}
 
 func (e *Engine) Run(addr string) error {
 	return http.ListenAndServe(addr, e)
@@ -30,5 +36,12 @@ func (e *Engine) Run(addr string) error {
 //所有的 http 请求通过 ServeHTTP
 func (e *Engine) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	c := NewContext(res, req)
+	var middlewares []HandlerFunc
+	for _, group := range e.groups {
+		if strings.HasPrefix(c.Path, group.prefix) {
+			middlewares = append(middlewares, group.middlewares...)
+		}
+	}
+	c.handlers = HandlersChain(middlewares)
 	e.router.handle(c)
 }
