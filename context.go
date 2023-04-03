@@ -26,6 +26,8 @@ type Context struct {
 	Method string
 	Path   string
 
+	StatusCode int
+
 	params   map[string]string
 	index    int           //函数链的下标指针
 	handlers HandlersChain //请求访问的函数链
@@ -75,6 +77,7 @@ func (c *Context) Params(key string) string {
 
 // Status 写入请求头状态码
 func (c *Context) Status(code int) {
+	c.StatusCode = code
 	c.ResponseWriter.WriteHeader(code)
 }
 

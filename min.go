@@ -23,6 +23,11 @@ func New() *Engine {
 
 	return engine
 }
+func Default() *Engine {
+	engine := New()
+	engine.Use(Logger())
+	return engine
+}
 
 func (e *Engine) Run(addr string) error {
 	return http.ListenAndServe(addr, e)

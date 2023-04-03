@@ -7,8 +7,8 @@ type RouterGroup struct {
 	middlewares []HandlerFunc
 }
 
-func (g *RouterGroup) Use(middleware HandlerFunc) {
-	g.middlewares = append(g.middlewares, middleware)
+func (g *RouterGroup) Use(middleware ...HandlerFunc) {
+	g.middlewares = append(g.middlewares, middleware...)
 }
 
 func (g *RouterGroup) Group(prefix string) *RouterGroup {
