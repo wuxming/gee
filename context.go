@@ -83,7 +83,8 @@ func (c *Context) Status(code int) {
 	c.ResponseWriter.WriteHeader(code)
 }
 func (c *Context) Fail(error string) {
-	http.Error(c.ResponseWriter, error, http.StatusInternalServerError)
+	c.Abort()
+	c.JSON(http.StatusInternalServerError, H{"message": error})
 }
 
 // SetHeader 重写请求头信息
