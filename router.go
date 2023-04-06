@@ -19,7 +19,7 @@ func NewRouter() *Router {
 	}
 }
 
-//路由器添加路由
+// addRoute 路由器添加路由
 func (r *Router) addRoute(method, pattern string, handlers HandlersChain) {
 	key := method + ":" + pattern
 	if _, ok := r.roots[method]; !ok {
@@ -62,7 +62,7 @@ func (r *Router) getRoute(method, path string) (*node, map[string]string) {
 	return nil, nil
 }
 
-//路由处理
+// handle 路由处理
 func (r *Router) handle(c *Context) {
 
 	n, params := r.getRoute(c.Method, c.Path)
@@ -80,7 +80,7 @@ func (r *Router) handle(c *Context) {
 	c.Next()
 }
 
-//pattern 和 path 以 / 分割成 parts 数组
+// parsePatternAndPath pattern 和 path 以 / 分割成 parts 数组
 func parsePatternAndPath(s string) []string {
 	var ans []string
 	parts := strings.Split(s, "/")

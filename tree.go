@@ -4,7 +4,7 @@ import (
 	"strings"
 )
 
-//将路由存储到前缀树上，node 为前缀树上的一个节点
+// node 将路由存储到前缀树上，node 为前缀树上的一个节点
 type node struct {
 	pattern  string  //所注册路由
 	part     string  //所注册的路由由 / 分割而成的一部分
@@ -12,7 +12,7 @@ type node struct {
 	iswild   bool    //是否模糊匹配，当 part 中有 : 或 * 时为 true
 }
 
-//将所注册的路由 pattern 插入的前缀树中
+// instert 将所注册的路由 pattern 插入的前缀树中
 func (n *node) instert(pattern string, parts []string, cur int) {
 	//part 全部插入完成，这时候 n 为最后一个节点，为 pattern 赋值
 	if len(parts) == cur {
@@ -31,7 +31,7 @@ func (n *node) instert(pattern string, parts []string, cur int) {
 	child.instert(pattern, parts, cur+1)
 }
 
-//匹配子节点，用于插入
+// matchChild 匹配子节点，用于插入
 func (n *node) matchChild(part string) *node {
 	for _, child := range n.children {
 		if child.part == part || child.iswild {
@@ -41,7 +41,7 @@ func (n *node) matchChild(part string) *node {
 	return nil
 }
 
-//根据 http 访问的 path 找到最后的前缀树节点
+// search 根据 http 访问的 path 找到最后的前缀树节点
 func (n *node) search(parts []string, cur int) *node {
 	if len(parts) == cur || strings.HasPrefix(n.part, "*") {
 		//最后的节点才带有 pattern，未匹配到最后说明匹配失败
@@ -64,7 +64,7 @@ func (n *node) search(parts []string, cur int) *node {
 
 }
 
-//匹配所有子节点，匹配成功的全部返回
+// matchChilds 匹配所有子节点，匹配成功的全部返回
 func (n *node) matchChilds(part string) []*node {
 	var childs []*node
 	for _, child := range n.children {

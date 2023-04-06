@@ -43,7 +43,7 @@ func (g *RouterGroup) DELETE(pattern string, handlers ...HandlerFunc) {
 	g.addRoute("DELETE", pattern, handlers)
 }
 
-//创建静态 handler
+// createStaticHandler 创建静态 handler
 func (g *RouterGroup) createStaticHandler(relativePath string, fs http.FileSystem) HandlerFunc {
 	//拼成绝对路径
 	absoluePath := path.Join(g.prefix, relativePath)
