@@ -46,7 +46,7 @@ func (e *Engine) Run(addr string) error {
 	return http.ListenAndServe(addr, e)
 }
 
-//所有的 http 请求通过 ServeHTTP
+// ServeHTTP 所有的 http 请求通过此函数
 func (e *Engine) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	c := NewContext(res, req)
 	var middlewares []HandlerFunc

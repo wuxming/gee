@@ -19,7 +19,7 @@ func NewRouter() *Router {
 	}
 }
 
-//路由器添加路由
+// addRoute 路由器添加路由
 func (r *Router) addRoute(method, pattern string, handlers HandlersChain) {
 	key := method + ":" + pattern
 	if _, ok := r.roots[method]; !ok {
