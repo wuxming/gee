@@ -6,11 +6,11 @@ import (
 )
 
 func main() {
-	m := New()
+	m := Default()
 	m.GET("/testGET", func(c *Context) {
 		name := c.Query("name")
 		c.JSON(http.StatusOK, H{
-			"name": name,
+			"name": name[100],
 			"msg":  "GET 请求测试成功",
 		})
 	})
