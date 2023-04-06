@@ -1,6 +1,7 @@
 package main
 
 import (
+	"html/template"
 	"net/http"
 	"strings"
 )
@@ -8,9 +9,11 @@ import (
 type HandlerFunc func(ctx *Context)
 type HandlersChain []HandlerFunc
 type Engine struct {
-	*RouterGroup //继承后，可以调用RouterGroup的全部方法
-	router       *Router
-	groups       []*RouterGroup //存储所有的分组
+	*RouterGroup  //继承后，可以调用RouterGroup的全部方法
+	router        *Router
+	groups        []*RouterGroup     //存储所有的分组
+	htmlTemplates *template.Template //将所有模板加入内存
+	funcMap       template.FuncMap   //自定义模板渲染函数
 }
 
 func New() *Engine {
@@ -29,6 +32,15 @@ func Default() *Engine {
 	return engine
 }
 
+//设置函数映射
+func (e *Engine) SetFuncMap(funcMap template.FuncMap) {
+	e.funcMap = funcMap
+}
+
+// LoadHTMLGlob 加载pattern 下的 .html
+func (e *Engine) LoadHTMLGlob(pattern string) {
+	e.htmlTemplates = template.Must(template.New("").Funcs(e.funcMap).ParseGlob(pattern))
+}
 func (e *Engine) Run(addr string) error {
 	return http.ListenAndServe(addr, e)
 }
@@ -42,6 +54,7 @@ func (e *Engine) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 			middlewares = append(middlewares, group.middlewares...)
 		}
 	}
+	c.engine = e
 	c.handlers = HandlersChain(middlewares)
 	e.router.handle(c)
 }

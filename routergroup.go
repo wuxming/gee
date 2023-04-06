@@ -1,5 +1,10 @@
 package main
 
+import (
+	"net/http"
+	"path"
+)
+
 type RouterGroup struct {
 	prefix      string       //该分组的前缀
 	parent      *RouterGroup //父分组
@@ -36,4 +41,27 @@ func (g *RouterGroup) PUT(pattern string, handlers ...HandlerFunc) {
 }
 func (g *RouterGroup) DELETE(pattern string, handlers ...HandlerFunc) {
 	g.addRoute("DELETE", pattern, handlers)
+}
+
+//创建静态 handler
+func (g *RouterGroup) createStaticHandler(relativePath string, fs http.FileSystem) HandlerFunc {
+	//拼成绝对路径
+	absoluePath := path.Join(g.prefix, relativePath)
+	//将 absoluePath 前缀去掉后，然后可以在 fs 目录下查找静态文件
+	fileServer := http.StripPrefix(absoluePath, http.FileServer(fs))
+	return func(c *Context) {
+		file := c.Params("filepath")
+		//查看文件是否存在
+		if _, err := fs.Open(file); err != nil {
+			c.Status(http.StatusNotFound)
+			return
+		}
+		//静态文件服务器已经由原生 fileServer 实现
+		fileServer.ServeHTTP(c.ResponseWriter, c.Request)
+	}
+}
+func (g *RouterGroup) Static(relativePath, root string) {
+	handler := g.createStaticHandler(relativePath, http.Dir(root))
+	urlPattern := path.Join(relativePath, "/*filepath")
+	g.GET(urlPattern, handler)
 }

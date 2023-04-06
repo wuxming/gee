@@ -31,6 +31,8 @@ type Context struct {
 	params   map[string]string
 	index    int           //函数链的下标指针
 	handlers HandlersChain //请求访问的函数链
+
+	engine *Engine //可以访问 html
 }
 
 func NewContext(ResponseWriter http.ResponseWriter, Request *http.Request) *Context {
@@ -80,6 +82,9 @@ func (c *Context) Status(code int) {
 	c.StatusCode = code
 	c.ResponseWriter.WriteHeader(code)
 }
+func (c *Context) Fail(error string) {
+	http.Error(c.ResponseWriter, error, http.StatusInternalServerError)
+}
 
 // SetHeader 重写请求头信息
 func (c *Context) SetHeader(key, value string) {
@@ -100,19 +105,20 @@ func (c *Context) JSON(code int, obj any) {
 	c.SetContentTpye(jsonContentType)
 	jsonBytes, err := json.Marshal(obj)
 	if err != nil {
-		http.Error(c.ResponseWriter, err.Error(), http.StatusInternalServerError)
+		c.Fail(err.Error())
 	}
 	_, err = c.ResponseWriter.Write(jsonBytes)
 	if err != nil {
-		http.Error(c.ResponseWriter, err.Error(), http.StatusInternalServerError)
+		c.Fail(err.Error())
 	}
 }
-func (c *Context) HTML(code int, html string) {
+func (c *Context) HTML(code int, name string, data interface{}) {
 	c.Status(code)
 	c.SetContentTpye(htmlContentType)
-	_, err := c.ResponseWriter.Write([]byte(html))
+	//支持模板文件名选择模板渲染
+	err := c.engine.htmlTemplates.ExecuteTemplate(c.ResponseWriter, name, data)
 	if err != nil {
-		http.Error(c.ResponseWriter, err.Error(), http.StatusInternalServerError)
+		c.Fail(err.Error())
 	}
 }
 func (c *Context) String(code int, format string, values ...interface{}) {
@@ -121,7 +127,7 @@ func (c *Context) String(code int, format string, values ...interface{}) {
 	_, err := c.ResponseWriter.Write([]byte(fmt.Sprintf(format, values...)))
 	if err != nil {
 		if err != nil {
-			http.Error(c.ResponseWriter, err.Error(), http.StatusInternalServerError)
+			c.Fail(err.Error())
 		}
 	}
 }
@@ -129,6 +135,6 @@ func (c *Context) Data(code int, data []byte) {
 	c.Status(code)
 	_, err := c.ResponseWriter.Write(data)
 	if err != nil {
-		http.Error(c.ResponseWriter, err.Error(), http.StatusInternalServerError)
+		c.Fail(err.Error())
 	}
 }

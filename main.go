@@ -14,6 +14,7 @@ func main() {
 			"msg":  "GET 请求测试成功",
 		})
 	})
+	m.Static("/assets", "./a")
 	err := m.Run(":8080")
 	if err != nil {
 		fmt.Println(err)
