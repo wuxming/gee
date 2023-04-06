@@ -32,13 +32,14 @@ func Default() *Engine {
 	return engine
 }
 
-//设置函数映射
+// SetFuncMap 设置函数映射
 func (e *Engine) SetFuncMap(funcMap template.FuncMap) {
 	e.funcMap = funcMap
 }
 
 // LoadHTMLGlob 加载pattern 下的 .html
 func (e *Engine) LoadHTMLGlob(pattern string) {
+	//创建空白模板，添加函数映射，并加载文件
 	e.htmlTemplates = template.Must(template.New("").Funcs(e.funcMap).ParseGlob(pattern))
 }
 func (e *Engine) Run(addr string) error {
