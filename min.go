@@ -1,4 +1,4 @@
-package main
+package min
 
 import (
 	"html/template"
