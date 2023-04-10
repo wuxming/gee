@@ -21,6 +21,9 @@ func NewRouter() *Router {
 
 // addRoute 路由器添加路由
 func (r *Router) addRoute(method, pattern string, handlers HandlersChain) {
+	//打印 route 信息
+	printRoute(method, pattern, handlers)
+
 	key := method + ":" + pattern
 	if _, ok := r.roots[method]; !ok {
 		//为每个方法都创建一个前缀树。

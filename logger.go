@@ -1,7 +1,10 @@
 package min
 
 import (
+	"fmt"
 	"log"
+	"reflect"
+	"runtime"
 	"time"
 )
 
@@ -33,4 +36,10 @@ func Logger() HandlerFunc {
 		}
 		log.Printf("["+color+"%d\033[0m] %s in %v", c.StatusCode, c.Request.RequestURI, time.Since(t))
 	}
+}
+func printRoute(httpMethod, absolutePath string, handlers HandlersChain) {
+	nuHandlers := len(handlers)
+	//获取函数名
+	handlerName := runtime.FuncForPC(reflect.ValueOf(handlers.Last()).Pointer()).Name()
+	fmt.Printf("%-6s %-25s --> %s (%d handlers)\n", httpMethod, absolutePath, handlerName, nuHandlers)
 }
