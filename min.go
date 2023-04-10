@@ -1,6 +1,7 @@
 package min
 
 import (
+	"fmt"
 	"html/template"
 	"net/http"
 	"strings"
@@ -8,6 +9,14 @@ import (
 
 type HandlerFunc func(ctx *Context)
 type HandlersChain []HandlerFunc
+
+func (h HandlersChain) Last() HandlerFunc {
+	if length := len(h); length > 0 {
+		return h[length-1]
+	}
+	return nil
+}
+
 type Engine struct {
 	*RouterGroup  //继承后，可以调用RouterGroup的全部方法
 	router        *Router
@@ -43,6 +52,7 @@ func (e *Engine) LoadHTMLGlob(pattern string) {
 	e.htmlTemplates = template.Must(template.New("").Funcs(e.funcMap).ParseGlob(pattern))
 }
 func (e *Engine) Run(addr string) error {
+	fmt.Printf("Listening and serving HTTP on %s\n", addr)
 	return http.ListenAndServe(addr, e)
 }
 
