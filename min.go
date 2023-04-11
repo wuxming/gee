@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"net/http"
 	"strings"
+	"sync"
 )
 
 type HandlerFunc func(ctx *Context)
@@ -23,6 +24,7 @@ type Engine struct {
 	groups        []*RouterGroup     //存储所有的分组
 	htmlTemplates *template.Template //将所有模板加入内存
 	funcMap       template.FuncMap   //自定义模板渲染函数
+	pool          sync.Pool          //存储 context 的对象池
 }
 
 func New() *Engine {
@@ -32,7 +34,9 @@ func New() *Engine {
 	engine.RouterGroup = rootGroup
 
 	engine.groups = []*RouterGroup{rootGroup}
-
+	engine.pool.New = func() any {
+		return &Context{engine: engine}
+	}
 	return engine
 }
 func Default() *Engine {
@@ -58,7 +62,10 @@ func (e *Engine) Run(addr string) error {
 
 // ServeHTTP 所有的 http 请求通过此函数
 func (e *Engine) ServeHTTP(res http.ResponseWriter, req *http.Request) {
-	c := NewContext(res, req)
+
+	//获取 context，
+	c := e.pool.Get().(*Context)
+	c.reset(res, req)
 	var middlewares []HandlerFunc
 	for _, group := range e.groups {
 		if strings.HasPrefix(c.Path, group.prefix) {
@@ -68,4 +75,6 @@ func (e *Engine) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	c.engine = e
 	c.handlers = HandlersChain(middlewares)
 	e.router.handle(c)
+	// context 的生命周期结束，放回对象池，pool
+	e.pool.Put(c)
 }
