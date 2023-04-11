@@ -20,11 +20,13 @@ func TestMinGet(t *testing.T) {
 	m := Default()
 	var tmp string
 	g := m.Group("v1")
+	//中间件
 	g.Use(func(ctx *Context) {
 		tmp += "A"
 		ctx.Next()
 		tmp += "C"
 	})
+	//动态路由
 	g.GET("/testGET/:var1", func(c *Context) {
 		name := c.Query("name")
 		var1 := c.Params("var1")

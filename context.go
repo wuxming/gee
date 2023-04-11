@@ -35,15 +35,14 @@ type Context struct {
 	engine *Engine //可以访问 html
 }
 
-func NewContext(ResponseWriter http.ResponseWriter, Request *http.Request) *Context {
-	return &Context{
-		Request:        Request,
-		ResponseWriter: ResponseWriter,
-		Method:         Request.Method,
-		Path:           Request.URL.Path,
-		index:          -1, //下标从-1 开始
-		params:         make(map[string]string),
-	}
+// Reset 重新为 context 赋值
+func (c *Context) reset(ResponseWriter http.ResponseWriter, Request *http.Request) {
+	c.Request = Request
+	c.ResponseWriter = ResponseWriter
+	c.Method = Request.Method
+	c.Path = Request.URL.Path
+	c.index = -1 //下标从-1 开始
+	c.params = make(map[string]string)
 }
 
 //------------------------flow control-------------------------------------
