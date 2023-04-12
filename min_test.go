@@ -1,16 +1,28 @@
 package min
 
 import (
+	"bytes"
 	"encoding/json"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-func PreformRequset(r http.Handler, method, path string, headers ...http.Header) *httptest.ResponseRecorder {
-	req := httptest.NewRequest(method, path, nil)
+type header struct {
+	Key   string
+	Value string
+}
+
+func PreformRequset(r http.Handler, method, path string, body io.Reader, headers ...header) *httptest.ResponseRecorder {
+	req := httptest.NewRequest(method, path, body)
+	for _, h := range headers {
+		req.Header.Add(h.Key, h.Value)
+	}
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 	return w
@@ -38,7 +50,7 @@ func TestMinGet(t *testing.T) {
 		})
 	})
 	//测试服务启动 发送 Get 请求
-	w := PreformRequset(m, "GET", "/v1/testGET/B?name=张三")
+	w := PreformRequset(m, "GET", "/v1/testGET/B?name=张三", nil)
 	body, err := ioutil.ReadAll(w.Body)
 	if err != nil {
 		return
@@ -61,5 +73,26 @@ func TestMinGet(t *testing.T) {
 		t.Error("结果不符合")
 	}
 	t.Log(tmp)
+}
+
+type people struct {
+	Name string `json:"name"`
+	Nge  int    `json:"age"`
+}
+
+func TestBinding(t *testing.T) {
+	m := Default()
+	m.POST("/", func(c *Context) {
+		p := people{}
+		c.Bind(&p)
+		assert.Equal(t, "sam", p.Name)
+		assert.Equal(t, 20, p.Nge)
+	})
+	body := bytes.NewBufferString(`{"name":"sam","age":20}`)
+	h := header{
+		Key:   "Content-Type",
+		Value: "application/json",
+	}
+	PreformRequset(m, "POST", "/", body, h)
 
 }

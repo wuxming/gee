@@ -15,7 +15,7 @@ func BenchmarkMin(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		for j := 0; j < 10000; j++ {
 			go func() {
-				PreformRequset(m, "GET", "/benchmark/test")
+				PreformRequset(m, "GET", "/benchmark/test", nil)
 			}()
 		}
 	}
