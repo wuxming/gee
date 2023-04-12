@@ -3,8 +3,11 @@ package min
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"math"
 	"net/http"
+
+	"github.com/wuxming/min/binding"
 )
 
 const (
@@ -13,6 +16,7 @@ const (
 	htmlContentType = "text/html"
 )
 const abortIndex int = math.MaxInt8 >> 1
+const defaultStatus = http.StatusOK
 
 // H 使得数据构建更加简洁
 type H map[string]interface{}
@@ -41,8 +45,10 @@ func (c *Context) reset(ResponseWriter http.ResponseWriter, Request *http.Reques
 	c.ResponseWriter = ResponseWriter
 	c.Method = Request.Method
 	c.Path = Request.URL.Path
-	c.index = -1 //下标从-1 开始
+	c.StatusCode = defaultStatus
 	c.params = make(map[string]string)
+	c.index = -1 //下标从-1 开始
+
 }
 
 //------------------------flow control-------------------------------------
@@ -62,6 +68,18 @@ func (c *Context) Abort() {
 
 //------------------------input-------------------------------------
 
+// Bind 	参数绑定
+func (c *Context) Bind(obj any) {
+	//获取实例
+	b := binding.Default(c.Method, c.contextType())
+	//调用该实例 bind 方法
+	if err := b.Bind(c.Request, obj); err != nil {
+		c.Abort()
+		log.Println(err.Error())
+		c.JSON(http.StatusBadRequest, H{"err": err.Error()})
+	}
+
+}
 func (c *Context) Postform(key string) string {
 	return c.Request.FormValue(key)
 }
@@ -137,4 +155,17 @@ func (c *Context) Data(code int, data []byte) {
 	if err != nil {
 		c.Fail(err.Error())
 	}
+}
+
+//------------------------output-------------------------------------
+
+// contextType 获取请求数据传输的类型
+func (c *Context) contextType() string {
+	contextType := c.Request.Header.Get("Context-Type")
+	for i, char := range contextType {
+		if char == ' ' || char == ';' {
+			return contextType[:i]
+		}
+	}
+	return contextType
 }
